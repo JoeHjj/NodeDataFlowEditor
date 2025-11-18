@@ -1,0 +1,153 @@
+cmake_minimum_required(VERSION 3.16)
+project(NodeDataFlowEditor LANGUAGES CXX)
+
+set(TARGET_NAME NodeDataFlowEditor)
+
+message(" ")
+message("+---------------------------------------------------------------------+")
+message("| ${TARGET_NAME}                                                      |")
+message("+---------------------------------------------------------------------+")
+message(" ")
+
+# -----------------------------------------------------------
+# Options
+# -----------------------------------------------------------
+option(ENABLE_TESTS "Enable unit tests" ON)
+
+# -----------------------------------------------------------
+# Qt: Prefer Qt6, fallback to Qt5
+# -----------------------------------------------------------
+find_package(Qt6 COMPONENTS Core Gui Widgets QUIET)
+
+if (Qt6_FOUND)
+    message(STATUS "Using Qt6")
+    set(QT_PACKAGE Qt6)
+else()
+    message(STATUS "Qt6 not found, using Qt5")
+    find_package(Qt5 REQUIRED COMPONENTS Core Gui Widgets)
+    set(QT_PACKAGE Qt5)
+endif()
+
+# -----------------------------------------------------------
+# Path Sets (YOUR ORIGINAL VARIABLES)
+# -----------------------------------------------------------
+set(VIEW_INCLUDE_REPO view/include)
+set(UTILITY_INCLUDE_REPO utility/include)
+set(TAGGABLE_INCLUDE_REPO taggable/include)
+set(FACTORY_INCLUDE_REPO factory/include)
+set(MODEL_INCLUDE_REPO model/include)
+set(PRESENTER_INCLUDE_REPO presenter/include)
+
+set(VIEW_HEADERS_REPO ${VIEW_INCLUDE_REPO}/view)
+set(VIEW_SRC_REPO view/src)
+
+set(UTILITY_HEADERS_REPO ${UTILITY_INCLUDE_REPO}/utility)
+set(UTILITY_SRC_REPO utility/src)
+
+set(TAGGABLE_HEADERS_REPO ${TAGGABLE_INCLUDE_REPO}/taggable)
+
+set(FACTORY_HEADERS_REPO ${FACTORY_INCLUDE_REPO}/factory)
+set(FACTORY_SRC_REPO factory/src)
+
+set(MODEL_HEADERS_REPO ${MODEL_INCLUDE_REPO}/model)
+set(MODEL_SRC_REPO model/src)
+
+set(PRESENTER_HEADERS_REPO ${PRESENTER_INCLUDE_REPO}/presenter)
+set(PRESENTER_SRC_REPO presenter/src)
+
+# -----------------------------------------------------------
+# Sources
+# -----------------------------------------------------------
+set(SOURCES
+    ${FACTORY_SRC_REPO}/NodeFactory.cpp
+    ${MODEL_SRC_REPO}/NodeModel.cpp
+    ${PRESENTER_SRC_REPO}/NodePresenter.cpp
+    ${VIEW_SRC_REPO}/EditableLabelItem.cpp
+    ${VIEW_SRC_REPO}/GraphView.cpp
+    ${VIEW_SRC_REPO}/GraphScene.cpp
+    ${VIEW_SRC_REPO}/ConnectionItem.cpp
+    ${VIEW_SRC_REPO}/GroupItem.cpp
+    ${VIEW_SRC_REPO}/NodeItem.cpp
+    ${VIEW_SRC_REPO}/NodeItemViewAdapter.cpp
+    ${VIEW_SRC_REPO}/PenButton.cpp
+    ${VIEW_SRC_REPO}/PortLabel.cpp
+    ${VIEW_SRC_REPO}/PortView.cpp
+    ${UTILITY_SRC_REPO}/GraphRegistry.cpp
+    ${UTILITY_SRC_REPO}/NodeHelper.cpp
+    ${UTILITY_SRC_REPO}/WidgetVisitor.cpp
+)
+
+# -----------------------------------------------------------
+# Headers
+# -----------------------------------------------------------
+set(HEADERS
+    ${FACTORY_HEADERS_REPO}/NodeFactory.hpp
+    ${MODEL_HEADERS_REPO}/NodeModel.hpp
+    ${PRESENTER_HEADERS_REPO}/NodePresenter.hpp
+    ${VIEW_HEADERS_REPO}/GraphView.hpp
+    ${VIEW_HEADERS_REPO}/GraphScene.hpp
+    ${VIEW_HEADERS_REPO}/ConnectionItem.hpp
+    ${VIEW_HEADERS_REPO}/ConnectionPort.hpp
+    ${VIEW_HEADERS_REPO}/EditableLabelItem.hpp
+    ${VIEW_HEADERS_REPO}/GroupItem.hpp
+    ${VIEW_HEADERS_REPO}/INodeView.hpp
+    ${VIEW_HEADERS_REPO}/NodeItem.hpp
+    ${VIEW_HEADERS_REPO}/NodeItemViewAdapter.hpp
+    ${VIEW_HEADERS_REPO}/PenButton.hpp
+    ${VIEW_HEADERS_REPO}/PortLabel.hpp
+    ${VIEW_HEADERS_REPO}/PortView.hpp
+    ${TAGGABLE_HEADERS_REPO}/Taggable.hpp
+    ${TAGGABLE_HEADERS_REPO}/TagApplicator.hpp
+    ${TAGGABLE_HEADERS_REPO}/TagRegistry.hpp
+    ${UTILITY_HEADERS_REPO}/NodeHelper.hpp
+    ${UTILITY_HEADERS_REPO}/WidgetVisitor.hpp
+    ${UTILITY_HEADERS_REPO}/GraphRegistry.hpp
+    ${UTILITY_HEADERS_REPO}/GroupDescriptor.hpp
+    ${UTILITY_HEADERS_REPO}/NodeDescriptor.hpp
+)
+
+# -----------------------------------------------------------
+# Library target
+# -----------------------------------------------------------
+add_library(${TARGET_NAME} ${HEADERS} ${SOURCES})
+
+target_sources(${TARGET_NAME}
+    PRIVATE ${SOURCES}
+    PUBLIC ${HEADERS}
+)
+
+target_include_directories(${TARGET_NAME}
+    PUBLIC
+        ${VIEW_INCLUDE_REPO}
+        ${UTILITY_INCLUDE_REPO}
+        ${TAGGABLE_INCLUDE_REPO}
+        ${FACTORY_INCLUDE_REPO}
+        ${MODEL_INCLUDE_REPO}
+        ${PRESENTER_INCLUDE_REPO}
+        ${CMAKE_SOURCE_DIR}
+        ${CMAKE_BINARY_DIR}
+        ${NLOHMANN_INCLUDE_PATH}
+)
+
+set_target_properties(${TARGET_NAME} PROPERTIES
+    CXX_STANDARD 17
+    CXX_STANDARD_REQUIRED ON
+    AUTOMOC ON
+    AUTOUIC ON
+    AUTORCC ON
+)
+
+# Qt5 or Qt6 — unified API
+target_link_libraries(${TARGET_NAME}
+    PUBLIC
+        Qt::Core
+        Qt::Gui
+        Qt::Widgets
+)
+
+# -----------------------------------------------------------
+# Tests (optional)
+# -----------------------------------------------------------
+if (ENABLE_TESTS)
+    add_subdirectory(tests)
+endif()

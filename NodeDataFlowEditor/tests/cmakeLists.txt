@@ -1,0 +1,81 @@
+# -----------------------------------------------------------
+# Prefer Qt6, fallback to Qt5
+# -----------------------------------------------------------
+find_package(Qt6 COMPONENTS Core Gui Widgets QUIET)
+
+if (Qt6_FOUND)
+    message(STATUS "Test project: Using Qt6")
+    set(QT_PACKAGE Qt6)
+else()
+    message(STATUS "Test project: Qt6 not found, using Qt5")
+    find_package(Qt5 REQUIRED COMPONENTS Core Gui Widgets)
+    set(QT_PACKAGE Qt5)
+endif()
+
+# -----------------------------------------------------------
+# GoogleTest
+# (Your FindGoogleTestFramework exposes modern targets)
+# -----------------------------------------------------------
+find_package(GTest QUIET)
+
+set(TARGET unitTests)
+
+# -----------------------------------------------------------
+# Source files
+# -----------------------------------------------------------
+set(TEST_SOURCES
+    TestConnectionItem.cpp
+    TestPortLabel.cpp
+    NodeItemTest.cpp
+    GroupItemTest.cpp
+    GraphRegistryTest.cpp
+    NodeFactoryTest.cpp
+    TaggableTest.cpp
+    TagRegistryTest.cpp
+    TagApplicatorTest.cpp
+)
+
+# -----------------------------------------------------------
+# Executable
+# -----------------------------------------------------------
+add_executable(${TARGET} ${TEST_SOURCES})
+
+target_include_directories(${TARGET}
+    PRIVATE
+        ${CMAKE_SOURCE_DIR}
+        ${CMAKE_BINARY_DIR}
+        core
+)
+
+# -----------------------------------------------------------
+# Link required libraries
+# -----------------------------------------------------------
+target_link_libraries(${TARGET}
+    PRIVATE
+        Qt::Core
+        Qt::Gui
+        Qt::Widgets
+        NodeDataFlowEditor
+        GTest::gtest
+        GTest::gtest_main
+)
+
+set_target_properties(${TARGET} PROPERTIES
+    AUTOMOC ON
+    AUTOUIC ON
+    AUTORCC ON
+    CXX_STANDARD 17
+    CXX_STANDARD_REQUIRED ON
+)
+
+# Organized output directories
+set_target_properties(${TARGET} PROPERTIES
+    RUNTIME_OUTPUT_DIRECTORY_DEBUG   ${CMAKE_BINARY_DIR}/Debug
+    RUNTIME_OUTPUT_DIRECTORY_RELEASE ${CMAKE_BINARY_DIR}/Release
+)
+
+# -----------------------------------------------------------
+# CTest integration
+# -----------------------------------------------------------
+enable_testing()
+add_test(NAME ${TARGET} COMMAND ${TARGET})
